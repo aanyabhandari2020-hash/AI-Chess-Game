@@ -5,74 +5,228 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Chess Arena</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:linear-gradient(135deg,#101827,#243b55);color:#f8fafc;font-family:Arial,sans-serif;display:flex;justify-content:center;padding:24px}
-.app{width:100%;max-width:760px}
-header{text-align:center;margin-bottom:22px}
-h1{margin:0 0 8px;font-size:clamp(27px,5vw,40px)}
-header p{color:#cbd5e1;margin:0}
-.panel{background:#fff;color:#172033;border-radius:18px;padding:20px;box-shadow:0 18px 50px #0004}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-select,button{font:inherit;border:0;border-radius:9px;padding:10px 13px}
-select{background:#eef2ff;color:#172033}
-button{cursor:pointer;font-weight:bold}
-.primary{background:#4f46e5;color:white}
-.secondary{background:#e2e8f0;color:#172033}
-#status{background:#f1f5f9;padding:12px;border-radius:10px;margin:0 0 14px;font-weight:bold}
-.board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;border:4px solid #243b55;border-radius:5px;overflow:hidden}
-.square{display:flex;align-items:center;justify-content:center;position:relative;aspect-ratio:1;border-radius:0;padding:0;font-size:clamp(25px,6.5vw,54px);line-height:1}
-.light{background:#f0d9b5}
-.dark{background:#769656}
-.square.selected{box-shadow:inset 0 0 0 4px #facc15}
-.square.target::after{content:"";position:absolute;width:24%;height:24%;border-radius:50%;background:#1f293780}
-.square.last{background:#cdd16a}
-.pieces{font-family:"Segoe UI Symbol","DejaVu Sans",serif;pointer-events:none;z-index:1}
-.info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.info div{background:#f1f5f9;border-radius:10px;padding:12px;font-size:14px}
-#history{max-height:115px;overflow:auto;line-height:1.8;color:#475569;word-break:break-word}
-.actions{display:flex;gap:10px;margin-top:14px}
-.actions button{flex:1}
-footer{text-align:center;color:#cbd5e1;font-size:12px;margin-top:16px}
-@media(max-width:440px){body{padding:12px}.panel{padding:12px}.info{grid-template-columns:1fr}.top{align-items:stretch}.top select{flex:1}}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #101827, #243b55);
+  color: #f8fafc;
+}
+
+.app {
+  max-width: 720px;
+  margin: auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+h1 {
+  font-size: clamp(28px, 6vw, 40px);
+  margin-bottom: 8px;
+}
+
+header p { color: #cbd5e1; }
+
+.panel {
+  background: white;
+  color: #172033;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 15px 40px #0004;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+select, button {
+  font: inherit;
+  border: none;
+  border-radius: 9px;
+  padding: 11px;
+}
+
+select { background: #eef2ff; }
+
+button { cursor: pointer; font-weight: bold; }
+
+#status {
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 9px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
+  aspect-ratio: 1;
+  border: 4px solid #243b55;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.square {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: "Segoe UI Symbol", "DejaVu Sans", serif;
+  font-size: clamp(25px, 7vw, 55px);
+  line-height: 1;
+}
+
+.light { background: #f0d9b5; }
+.dark { background: #769656; }
+
+.square.selected {
+  box-shadow: inset 0 0 0 4px #facc15;
+}
+
+.square.target::after {
+  content: "";
+  width: 23%;
+  height: 23%;
+  position: absolute;
+  border-radius: 50%;
+  background: #17203380;
+}
+
+.square.last { background: #cdd16a; }
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.stat {
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+
+.stat p {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+#history {
+  max-height: 110px;
+  overflow-y: auto;
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.actions button { flex: 1; }
+
+.primary { background: #4f46e5; color: white; }
+.secondary { background: #e2e8f0; color: #172033; }
+
+footer {
+  text-align: center;
+  margin-top: 18px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+@media (max-width: 450px) {
+  body { padding: 10px; }
+  .panel { padding: 12px; }
+  .stats { grid-template-columns: 1fr; }
+  .toolbar { align-items: stretch; }
+}
 </style>
 </head>
+
 <body>
 <main class="app">
+
 <header>
-<h1>♟ AI Chess Arena</h1>
-<p>Challenge the computer. Think strategically. Play to win.</p>
+  <h1>♟ AI Chess Arena</h1>
+  <p>Challenge the computer. Think strategically. Play to win!</p>
 </header>
+
 <section class="panel">
-<div class="top">
-<strong>🤖 Computer opponent</strong>
-<select id="level" aria-label="AI difficulty">
-<option value="1">Easy</option>
-<option value="5" selected>Medium</option>
-<option value="10">Hard</option>
-</select>
-</div>
-<p id="status" role="status">Your turn — White moves first.</p>
-<div id="board" class="board" aria-label="Chessboard"></div>
-<div class="info">
-<div><strong>♙ You play</strong><p>White pieces</p></div>
-<div><strong>♟ Computer</strong><p>Black pieces</p></div>
-</div>
-<div class="info">
-<div><strong>Moves played</strong><p id="moveCount">0</p></div>
-<div><strong>Move history</strong><p id="history">No moves yet</p></div>
-</div>
-<div class="actions">
-<button class="primary" id="restart">↻ New game</button>
-<button class="secondary" id="undo">↶ Undo move</button>
-</div>
+
+  <div class="toolbar">
+    <strong>🤖 Computer Opponent</strong>
+    <select id="level" aria-label="AI difficulty">
+      <option value="1">Easy</option>
+      <option value="2" selected>Medium</option>
+      <option value="3">Hard</option>
+    </select>
+  </div>
+
+  <p id="status" role="status">Your turn — White moves first.</p>
+
+  <div id="board" class="board" aria-label="Chessboard"></div>
+
+  <div class="stats">
+    <div class="stat">
+      <strong>♙ You</strong>
+      <p>Play as White</p>
+    </div>
+    <div class="stat">
+      <strong>♟ Computer</strong>
+      <p>Plays as Black</p>
+    </div>
+    <div class="stat">
+      <strong>Moves played</strong>
+      <p id="moveCount">0</p>
+    </div>
+    <div class="stat">
+      <strong>Move history</strong>
+      <p id="history">No moves yet</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="restart">↻ New Game</button>
+    <button class="secondary" id="undo">↶ Undo Turn</button>
+  </div>
+
 </section>
-<footer>AI Chess Arena · Built with HTML, CSS and JavaScript</footer>
+
+<footer>
+  AI Chess Arena · Built with HTML, CSS and JavaScript
+</footer>
+
 </main>
 
 <script>
+"use strict";
+
 const game = new Chess();
+
 const boardEl = document.getElementById("board");
 const statusEl = document.getElementById("status");
 const historyEl = document.getElementById("history");
@@ -80,140 +234,334 @@ const countEl = document.getElementById("moveCount");
 const levelEl = document.getElementById("level");
 
 const symbols = {
- w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
- b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
+  w: { k:"♔", q:"♕", r:"♖", b:"♗", n:"♘", p:"♙" },
+  b: { k:"♚", q:"♛", r:"♜", b:"♝", n:"♞", p:"♟" }
 };
+
+const pieceValues = {
+  p: 100,
+  n: 320,
+  b: 330,
+  r: 500,
+  q: 900,
+  k: 20000
+};
+
 let selected = null;
 let targets = [];
 let lastMove = null;
 let thinking = false;
+let gameToken = 0;
 
-function renderBoard(){
- boardEl.innerHTML = "";
- const files = ["a","b","c","d","e","f","g","h"];
- for(let r=0;r<8;r++){
-  for(let c=0;c<8;c++){
-   const squareName = files[c] + (8-r);
-   const piece = game.get(squareName);
-   const btn = document.createElement("button");
-   btn.className = "square " + ((r+c)%2===0?"light":"dark");
-   btn.setAttribute("aria-label",squareName+(piece? " "+piece.color+" "+piece.type:""));
-   if(selected===squareName) btn.classList.add("selected");
-   if(targets.includes(squareName)) btn.classList.add("target");
-   if(lastMove && (lastMove.from===squareName||lastMove.to===squareName)) btn.classList.add("last");
-   if(piece){
-    const span = document.createElement("span");
-    span.className = "pieces";
-    span.textContent = symbols[piece.color][piece.type];
-    btn.appendChild(span);
-   }
-   btn.addEventListener("click",()=>clickSquare(squareName));
-   boardEl.appendChild(btn);
+function updateInfo() {
+  const moves = game.history();
+
+  countEl.textContent = moves.length;
+  historyEl.textContent = moves.length
+    ? moves.map((move, i) =>
+        (i % 2 === 0 ? (Math.floor(i / 2) + 1) + ". " : "") + move
+      ).join(" ")
+    : "No moves yet";
+
+  if (game.in_checkmate()) {
+    statusEl.textContent = game.turn() === "w"
+      ? "Checkmate! The computer wins."
+      : "Checkmate! You win!";
+  } else if (game.in_draw()) {
+    statusEl.textContent = "The game is a draw!";
+  } else if (thinking) {
+    statusEl.textContent = "🤖 Computer is thinking...";
+  } else if (game.in_check()) {
+    statusEl.textContent = game.turn() === "w"
+      ? "Your king is in check!"
+      : "Computer's king is in check!";
+  } else {
+    statusEl.textContent = game.turn() === "w"
+      ? "Your turn — White to move."
+      : "Computer's turn.";
   }
- }
- updateInfo();
 }
 
-function updateInfo(){
- const moves = game.history();
- countEl.textContent = moves.length;
- historyEl.textContent = moves.length ? moves.join(" ") : "No moves yet";
- if(game.game_over()){
-  thinking = false;
-  if(game.in_checkmate()){
-   statusEl.textContent = game.turn()==="w" ? "Checkmate — Computer wins!" : "Checkmate — You win!";
-  }else if(game.in_draw()){
-   statusEl.textContent = "Draw! The game is over.";
-  }else{
-   statusEl.textContent = "Game over.";
+function renderBoard() {
+  boardEl.innerHTML = "";
+
+  const files = ["a","b","c","d","e","f","g","h"];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const squareName = files[col] + (8 - row);
+      const piece = game.get(squareName);
+
+      const button = document.createElement("button");
+
+      button.className =
+        "square " + ((row + col) % 2 === 0 ? "light" : "dark");
+
+      button.setAttribute(
+        "aria-label",
+        squareName + (piece ? " " + piece.color + " " + piece.type : "")
+      );
+
+      if (selected === squareName) {
+        button.classList.add("selected");
+      }
+
+      if (targets.includes(squareName)) {
+        button.classList.add("target");
+      }
+
+      if (lastMove &&
+          (lastMove.from === squareName || lastMove.to === squareName)) {
+        button.classList.add("last");
+      }
+
+      if (piece) {
+        button.textContent = symbols[piece.color][piece.type];
+      }
+
+      button.addEventListener("click", () => clickSquare(squareName));
+      boardEl.appendChild(button);
+    }
   }
- }else if(thinking){
-  statusEl.textContent = "Computer is thinking...";
- }else if(game.in_check()){
-  statusEl.textContent = game.turn()==="w" ? "Your king is in check!" : "Computer is in check!";
- }else{
-  statusEl.textContent = game.turn()==="w" ? "Your turn — White to move." : "Computer's turn.";
- }
+
+  updateInfo();
 }
 
-function clickSquare(sq){
- if(thinking || game.game_over() || game.turn()!=="w") return;
- const piece = game.get(sq);
- if(selected && targets.includes(sq)){
-  const move = game.move({from:selected,to:sq,promotion:"q"});
-  selected=null; targets=[];
-  if(move){
-   lastMove={from:move.from,to:move.to};
-   renderBoard();
-   if(!game.game_over()) computerMove();
-  }else renderBoard();
-  return;
- }
- if(piece && piece.color==="w"){
-  selected=sq;
-  targets=game.moves({square:sq,verbose:true}).map(m=>m.to);
- }else{
-  selected=null;targets=[];
- }
- renderBoard();
-}
-
-function computerMove(){
- if(game.game_over()) return;
- thinking=true; updateInfo();
- // Use a real chess engine in the browser.
- const engine = new Worker("https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js");
- let finished=false;
- const finish = (move)=>{
-  if(finished)return;
-  finished=true;
-  engine.terminate();
-  thinking=false;
-  if(move && !game.game_over()){
-   const result=game.move(move);
-   if(result) lastMove={from:result.from,to:result.to};
+function clickSquare(square) {
+  if (thinking || game.game_over() || game.turn() !== "w") {
+    return;
   }
-  selected=null;targets=[];
+
+  const piece = game.get(square);
+
+  if (selected && targets.includes(square)) {
+    const move = game.move({
+      from: selected,
+      to: square,
+      promotion: "q"
+    });
+
+    selected = null;
+    targets = [];
+
+    if (move) {
+      lastMove = { from: move.from, to: move.to };
+      renderBoard();
+
+      if (!game.game_over()) {
+        computerMove();
+      }
+    } else {
+      renderBoard();
+    }
+
+    return;
+  }
+
+  if (piece && piece.color === "w") {
+    selected = square;
+    targets = game.moves({
+      square: square,
+      verbose: true
+    }).map(move => move.to);
+  } else {
+    selected = null;
+    targets = [];
+  }
+
   renderBoard();
- };
- engine.onerror=()=>{
-  // A legal fallback keeps the game playable if the engine cannot load.
-  const legal=game.moves({verbose:true});
-  if(legal.length) finish(legal[Math.floor(Math.random()*legal.length)].san);
-  else {thinking=false;renderBoard();}
- };
- engine.onmessage=(event)=>{
-  const line=String(event.data);
-  if(line.startsWith("bestmove")){
-   const uci=line.split(" ")[1];
-   if(uci && uci!=="(none)"){
-    finish({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]||"q"});
-   }else finish(null);
-  }
- };
- engine.postMessage("uci");
- engine.postMessage("ucinewgame");
- engine.postMessage("position fen "+game.fen());
- engine.postMessage("go depth "+levelEl.value);
- // Prevent a failed engine from leaving the board locked.
- setTimeout(()=>{
-  if(!finished){
-   const legal=game.moves({verbose:true});
-   if(legal.length) finish(legal[Math.floor(Math.random()*legal.length)].san);
-   else finish(null);
-  }
- },5000);
 }
 
-document.getElementById("restart").addEventListener("click",()=>{
- game.reset();selected=null;targets=[];lastMove=null;thinking=false;renderBoard();
+/* Evaluate the board from Black's point of view. */
+function evaluateBoard() {
+  let score = 0;
+  const board = game.board();
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col];
+
+      if (!piece) continue;
+
+      let value = pieceValues[piece.type];
+
+      // A small positional bonus encourages pieces to develop.
+      if (piece.type !== "k" && piece.type !== "p") {
+        const centerDistance =
+          Math.abs(3.5 - col) + Math.abs(3.5 - row);
+
+        value += Math.round((7 - centerDistance) * 3);
+      }
+
+      score += piece.color === "b" ? value : -value;
+    }
+  }
+
+  return score;
+}
+
+function minimax(depth, alpha, beta) {
+  if (game.in_checkmate()) {
+    return game.turn() === "b" ? -100000 : 100000;
+  }
+
+  if (game.in_draw() || game.game_over()) {
+    return 0;
+  }
+
+  if (depth <= 0) {
+    return evaluateBoard();
+  }
+
+  const moves = game.moves({ verbose: true });
+
+  if (game.turn() === "b") {
+    let bestScore = -Infinity;
+
+    for (const move of moves) {
+      game.move({
+        from: move.from,
+        to: move.to,
+        promotion: move.promotion || "q"
+      });
+
+      const score = minimax(depth - 1, alpha, beta);
+      game.undo();
+
+      bestScore = Math.max(bestScore, score);
+      alpha = Math.max(alpha, bestScore);
+
+      if (beta <= alpha) break;
+    }
+
+    return bestScore;
+  }
+
+  let bestScore = Infinity;
+
+  for (const move of moves) {
+    game.move({
+      from: move.from,
+      to: move.to,
+      promotion: move.promotion || "q"
+    });
+
+    const score = minimax(depth - 1, alpha, beta);
+    game.undo();
+
+    bestScore = Math.min(bestScore, score);
+    beta = Math.min(beta, bestScore);
+
+    if (beta <= alpha) break;
+  }
+
+  return bestScore;
+}
+
+function computerMove() {
+  if (game.game_over() || game.turn() !== "b") {
+    renderBoard();
+    return;
+  }
+
+  thinking = true;
+  const thisGame = gameToken;
+  renderBoard();
+
+  // Let the browser display the thinking message first.
+  setTimeout(() => {
+    if (thisGame !== gameToken) return;
+
+    if (game.game_over() || game.turn() !== "b") {
+      thinking = false;
+      renderBoard();
+      return;
+    }
+
+    const legalMoves = game.moves({ verbose: true });
+
+    if (legalMoves.length === 0) {
+      thinking = false;
+      renderBoard();
+      return;
+    }
+
+    const depth = Number(levelEl.value);
+    let bestMoves = [];
+    let bestScore = -Infinity;
+
+    for (const move of legalMoves) {
+      game.move({
+        from: move.from,
+        to: move.to,
+        promotion: move.promotion || "q"
+      });
+
+      const score = minimax(depth - 1, -Infinity, Infinity);
+      game.undo();
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoves = [move];
+      } else if (score === bestScore) {
+        bestMoves.push(move);
+      }
+    }
+
+    if (thisGame !== gameToken) return;
+
+    // Randomly choose among equally scored moves.
+    const chosen =
+      bestMoves[Math.floor(Math.random() * bestMoves.length)];
+
+    const played = game.move({
+      from: chosen.from,
+      to: chosen.to,
+      promotion: chosen.promotion || "q"
+    });
+
+    if (played) {
+      lastMove = { from: played.from, to: played.to };
+    }
+
+    thinking = false;
+    selected = null;
+    targets = [];
+    renderBoard();
+
+  }, 80);
+}
+
+function newGame() {
+  gameToken++;
+  game.reset();
+
+  selected = null;
+  targets = [];
+  lastMove = null;
+  thinking = false;
+
+  renderBoard();
+}
+
+document.getElementById("restart").addEventListener("click", newGame);
+
+document.getElementById("undo").addEventListener("click", () => {
+  if (thinking) return;
+
+  // Undo the computer's move and your previous move.
+  game.undo();
+  game.undo();
+
+  selected = null;
+  targets = [];
+  lastMove = null;
+
+  renderBoard();
 });
-document.getElementById("undo").addEventListener("click",()=>{
- if(thinking)return;
- game.undo();game.undo();
- selected=null;targets=[];lastMove=null;renderBoard();
-});
+
 renderBoard();
 </script>
+
 </body>
 </html>
