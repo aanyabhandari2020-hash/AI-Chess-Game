@@ -458,8 +458,10 @@ function minimax(depth, alpha, beta) {
   return bestScore;
 }
 
+
 function computerMove() {
   if (game.game_over() || game.turn() !== "b") {
+    thinking = false;
     renderBoard();
     return;
   }
@@ -468,7 +470,6 @@ function computerMove() {
   const thisGame = gameToken;
   renderBoard();
 
-  // Let the browser display the thinking message first.
   setTimeout(() => {
     if (thisGame !== gameToken) return;
 
@@ -486,18 +487,18 @@ function computerMove() {
       return;
     }
 
-    const depth = Number(levelEl.value);
     let bestMoves = [];
     let bestScore = -Infinity;
 
+    // Test each legal move and evaluate the resulting board.
     for (const move of legalMoves) {
       game.move({
         from: move.from,
         to: move.to,
-        promotion: move.promotion || "q"
+        promotion: "q"
       });
 
-      const score = minimax(depth - 1, -Infinity, Infinity);
+      const score = evaluateBoard();
       game.undo();
 
       if (score > bestScore) {
@@ -510,28 +511,34 @@ function computerMove() {
 
     if (thisGame !== gameToken) return;
 
-    // Randomly choose among equally scored moves.
+    // Select the best-scoring legal move.
     const chosen =
       bestMoves[Math.floor(Math.random() * bestMoves.length)];
 
     const played = game.move({
       from: chosen.from,
       to: chosen.to,
-      promotion: chosen.promotion || "q"
+      promotion: "q"
     });
 
     if (played) {
-      lastMove = { from: played.from, to: played.to };
+      lastMove = {
+        from: played.from,
+        to: played.to
+      };
     }
 
     thinking = false;
     selected = null;
     targets = [];
+
     renderBoard();
-
-  }, 80);
+  }, 100);
 }
+    
+       
 
+   
 function newGame() {
   gameToken++;
   game.reset();
